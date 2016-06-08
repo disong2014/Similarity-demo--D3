@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html>
+<meta charset="utf-8">
+
+
+    <style>
+        .node {
+            stroke: #fff;
+            stroke-width: 1.5px;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: .6;
+        }
+        .d3-tip {
+          line-height: 1;
+          font-weight: bold;
+          padding: 12px;
+          background: rgba(0, 0, 0, 0.8);
+          color: #fff;
+          border-radius: 2px;
+        }
+
+        /* Creates a small triangle extender for the tooltip */
+        .d3-tip:after {
+          box-sizing: border-box;
+          display: inline;
+          font-size: 10px;
+          width: 100%;
+          line-height: 1;
+          color: rgba(0, 0, 0, 0.8);
+          content: "\25BC";
+          position: absolute;
+          text-align: center;
+        }
+
+        /* Style northward tooltips differently */
+        .d3-tip.n:after {
+          margin: -1px 0 0 0;
+          top: 100%;
+          left: 0;
+        }
+    </style>
+
+<body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+    <script>
+
+        var width = 960,
+            height = 500;
+
+        var color = d3.scale.category20();
+
+        var force = d3.layout.force()
+            .charge(-120)
+            
+            .size([width, height]);
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        d3.json("miserables.json", function (error, graph)
+        {
+            if (error) throw error;
+
+            graph.links.forEach(function (d) { 
+                if (d.value>0 && d.value < 50)
+                    d.length = 100;
+                else if (d.value < 70)
+                    d.length = 80;
+                else if (d.value < 90)
+                    d.length = 50;
+                else if (d.value < 100)
+                    d.length = 30;
+            });
+            force
+                .nodes(graph.nodes)
+                .links(graph.links)
+                .linkDistance(function (link) { 
+                    return link.length*2;
+                })
+                .start();
+
+            var link = svg.selectAll(".link")
+                .data(graph.links)
+                .enter().append("line")
+                .attr("class", "link")
+                .style("stroke-width", 5);
+            var tip = d3.tip()
+              .attr('class', 'd3-tip')
+              .offset([-10, 0])
+              .html(function (d)
+              {
+                  return "<div style='backgournd:white;z-index:10;'><strong>File: </strong><span style='color:red'>" + d.name + "</span><br/>"+
+                        "<strong>Type: </strong><span style='color:red'>" + d.type + "</span><br/>" +
+                        "<strong>Size: </strong><span style='color:red'>" + d.size + "</span><br/>" +
+                        "</div>";
+              });
+            svg.call(tip);
+            var node = svg.selectAll(".node")
+                .data(graph.nodes)
+                .enter().append("circle")
+                .attr("class", "node")
+                .attr("r", 5)
+                .style("fill", function (d) { return color(d.group); })
+                .on("mouseover", tip.show)
+                .on("mouseout", tip.hide);
+                //.call(force.drag);
+
+            var linktext = svg.selectAll("g.linklabelholder").data(graph.links);
+            linktext.enter().append("g").attr("class", "linklabelholder")
+           .append("text")
+           .attr("class", "linklabel")
+           .attr("dx", 1)
+           .attr("dy", ".35em")
+           .attr("text-anchor", "middle")
+           .text(function (d) { return d.value });
+            node.append("title")
+                .text(function (d) { return d.name; });
+
+            
+
+            force.on("tick", function ()
+            {
+                link.attr("x1", function (d) { 
+                        return d.source.x; })
+                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("x2", function (d) { return d.target.x; })
+                    .attr("y2", function (d) { return d.target.y; });
+
+                node.attr("cx", function (d) { return d.x; })
+                    .attr("cy", function (d) { return d.y; });
+
+                linktext.attr("transform", function (d)
+                {
+                    return "translate(" + (d.source.x + d.target.x) / 2 + ","
+                    + (d.source.y + d.target.y - 10) / 2 + ")";
+                });
+            });
+            
+        });
+
+    </script>
+</body>
+
