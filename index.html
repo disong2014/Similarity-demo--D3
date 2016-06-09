@@ -88,6 +88,32 @@
                 .enter().append("line")
                 .attr("class", "link")
                 .style("stroke-width", 5);
+            link.each(function (d,i) { 
+                if (d.value > 0 && d.value < 50)
+                {
+                    d.source.color = "#00ff00";  //green
+                    d.color = "#00ff00";
+                    d.stokeWidth = 2;
+                }
+                else if (d.value < 70)
+                {
+                    d.source.color = "#ff8000";  //blue
+                    d.color = "#ff8000";
+                    d.stokeWidth = 4;
+                }
+                else if (d.value < 90)
+                {
+                    d.source.color = "#1a75ff"; //orange
+                    d.color = "#1a75ff";
+                    d.stokeWidth = 6;
+                }
+                else if (d.value < 100)
+                {
+                    d.source.color = "#ff3333";   //red
+                    d.color = "#ff3333";
+                    d.stokeWidth = 8;
+                }
+            });
             var tip = d3.tip()
               .attr('class', 'd3-tip')
               .offset([-10, 0])
@@ -126,12 +152,19 @@
             {
                 link.attr("x1", function (d) { 
                         return d.source.x; })
-                    .attr("y1", function (d) { return d.source.y; })
+                    .attr("y1", function (d) {
+                        
+                        return d.source.y; })
                     .attr("x2", function (d) { return d.target.x; })
-                    .attr("y2", function (d) { return d.target.y; });
+                    .attr("y2", function (d) { return d.target.y; })
+                    .style("stroke", function (d) { return d.color})
+                    .style("stroke-width", function (d) { return d.stokeWidth });
 
-                node.attr("cx", function (d) { return d.x; })
-                    .attr("cy", function (d) { return d.y; });
+                node.attr("cx", function (d) { 
+        
+                    return d.x; })
+                    .attr("cy", function (d) { return d.y; })
+                    .style("fill", function (d) { return d.color});
 
                 linktext.attr("transform", function (d)
                 {
