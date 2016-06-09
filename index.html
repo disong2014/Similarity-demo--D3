@@ -47,8 +47,8 @@
     <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
     <script>
 
-        var width = 960,
-            height = 500;
+        var width = 1200,
+            height = 1000;
 
         var color = d3.scale.category20();
 
@@ -67,19 +67,19 @@
 
             graph.links.forEach(function (d) { 
                 if (d.value>0 && d.value < 50)
-                    d.length = 100;
+                    d.length = 400;
                 else if (d.value < 70)
-                    d.length = 80;
+                    d.length = 300;
                 else if (d.value < 90)
-                    d.length = 50;
+                    d.length = 200;
                 else if (d.value < 100)
-                    d.length = 30;
+                    d.length = 100;
             });
             force
                 .nodes(graph.nodes)
                 .links(graph.links)
                 .linkDistance(function (link) { 
-                    return link.length*2;
+                    return link.length;
                 })
                 .start();
 
@@ -94,24 +94,28 @@
                     d.source.color = "#00ff00";  //green
                     d.color = "#00ff00";
                     d.stokeWidth = 2;
+                    d.source.radius = 3;
                 }
                 else if (d.value < 70)
                 {
                     d.source.color = "#ff8000";  //blue
                     d.color = "#ff8000";
                     d.stokeWidth = 4;
+                    d.source.radius = 4;
                 }
                 else if (d.value < 90)
                 {
                     d.source.color = "#1a75ff"; //orange
                     d.color = "#1a75ff";
                     d.stokeWidth = 6;
+                    d.source.radius = 6;
                 }
                 else if (d.value < 100)
                 {
                     d.source.color = "#ff3333";   //red
                     d.color = "#ff3333";
                     d.stokeWidth = 8;
+                    d.source.radius = 8;
                 }
             });
             var tip = d3.tip()
@@ -132,8 +136,8 @@
                 .attr("r", 5)
                 .style("fill", function (d) { return color(d.group); })
                 .on("mouseover", tip.show)
-                .on("mouseout", tip.hide);
-                //.call(force.drag);
+                .on("mouseout", tip.hide)
+                .call(force.drag);
 
             var linktext = svg.selectAll("g.linklabelholder").data(graph.links);
             linktext.enter().append("g").attr("class", "linklabelholder")
@@ -164,6 +168,10 @@
         
                     return d.x; })
                     .attr("cy", function (d) { return d.y; })
+                    .attr("r", function (d,i) { 
+                        if (i == 0)
+                            return 10;
+                        return d.radius;})
                     .style("fill", function (d) { return d.color});
 
                 linktext.attr("transform", function (d)
